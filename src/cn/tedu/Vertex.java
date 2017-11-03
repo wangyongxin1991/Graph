@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
  */
 public class Vertex<T> implements Serializable, VertexInterface<T>
 {
-    public T lable;//标识标点,用来标识不同类型的顶点.比如:int,string
+    public T label;//标识标点,用来标识不同类型的顶点.比如:int,string
     public List<T> edgeList;//该顶点到临接点的边,实际以LinkList存储
     public boolean visited;//标识顶点是否被访问过
     public VertexInterface<T> previousVertex;//该顶点的前驱节点
@@ -26,7 +26,7 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
 
     public Vertex(T vertexlable)
     {
-        lable = vertexlable;
+        label = vertexlable;
         edgeList = (List<T>) new LinkedList<Edge>();
         visited = false;
         previousVertex = null;
@@ -39,22 +39,12 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
         return new NeighborIterator<T>();
     }
 
-    public T getLable()
-    {
-        return lable;
-    }
 
     //在求图中某两个顶点之间的最短路径时，在从起始顶点遍历过程中，需要记录下遍历到某个顶点时的前驱顶点， 
     //previousVertex 属性就派上用场了。因此，需要有判断和获取顶点的前驱顶点的方法：
     private boolean hasPreviousVertex()//判断顶点是否有前驱顶点
     {
         return this.previousVertex != null;
-    }
-
-    @Override
-    public boolean isVisited()
-    {
-        return visited;
     }
 
     //获得前驱顶点
@@ -111,44 +101,45 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
                 throw new NoSuchElementException();
             return nextNeighbor;
         }
-
-        /** 生成一个遍历该顶点所有邻接边的权值的迭代器
-           * 权值是Edge类的属性,因此先获得一个遍历Edge对象的迭代器,取得Edge对象,再获得权值
-           * @param <Double> 权值的类型
-           */
-        public class WeightIterator<T> implements Iterator<T>
+        @Override
+        public void remove()
         {
-            private Iterator<Edge> degesIterator;
+            throw new UnsupportedOperationException();
+        }
+    }
 
-            private WeightIterator()
-            {
-                degesIterator = (Iterator<Edge>) edgeList.iterator();
-            }
-            @Override
-            public boolean hasNext()
-            {
-                return degesIterator.hasNext();
-            }
 
-            @Override
-            public T next()
-            {
-                Double result;
-                if (degesIterator.hasNext())
-                {
-                    Edge next = degesIterator.next();
-                    result = next.getWeight();
-                } else
-                    throw new NoSuchElementException();
-                return (T) result;//从迭代器中取得结果时,需要强制转换成Double
-            }
+    /**
+     * @ClassName WeightIterator
+     * @Task 生成一个遍历该顶点的邻接边的权值的迭代器
+     * 权值是Edge属性 ,因此先获得一个遍历Edge对象的迭代器,取得Eege对象 , 再获得权值
+     * @author  wyx
+     * @date 2017年11月3日 下午10:29:19
+     */
+    private class WeightIterator implements Iterator
+    {
+        Iterator<Edge> edgesIterator;
+        private WeightIterator()
+        {
+            edgesIterator = (Iterator<Edge>) edgeList.iterator();
+        }
+        @Override
+        public boolean hasNext()
+        {
+            return edgesIterator.hasNext();
+        }
 
-            @Override
-            public void remove()
+        @Override
+        public Object next()
+        {
+            Double result;
+            if (edgesIterator.hasNext())
             {
-                throw new UnsupportedOperationException();
-            }
-
+                Edge next = edgesIterator.next();
+                result = next.getWeight();
+            } else
+                throw new NoSuchElementException();
+            return result;
         }
 
         @Override
@@ -208,37 +199,66 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
     }
 
     @Override
-    public T getLabel()
-    {
-        return null;
-    }
-
-    @Override
-    public void visit()
-    {
-    }
-
-    @Override
-    public void unVisit()
-    {
-    }
-
-    @Override
     public boolean connect(VertexInterface<T> endVertex, double edgeWeight)
     {
-        return false;
+        // 将"边"(边的实质是顶点)插入顶点的邻接表
+        boolean result = false;
+        if (!this.equals(endVertex))
+        {//顶点互不相同
+            Iterator<VertexInterface<T>> neighbors = this.getNeighborInterator();
+            boolean duplicateEdge = false;
+            while (!duplicateEdge && neighbors.hasNext())
+            {//保证不添加重复的边
+                VertexInterface<T> nextNeighbor = neighbors.next();
+                if (endVertex.equals(nextNeighbor))
+                {
+                    duplicateEdge = true;
+                    break;
+                }
+            } //end while
+            if (!duplicateEdge)
+            {
+                edgeList.add((T) new Edge(endVertex, edgeWeight));//添加一条新边
+                result = true;
+            } //end if
+        } //end if
+        return result;
     }
 
     @Override
     public boolean connect(VertexInterface<T> endVertex)
     {
-        return false;
+        return connect(endVertex, 0);
+    }
+
+    @Override
+    public T getLabel()
+    {
+        return label;
+    }
+
+    @Override
+    public boolean isVisited()
+    {
+        return visited;
+    }
+
+    @Override
+    public void visit()
+    {
+        visited = true;
+    }
+
+    @Override
+    public void unVisit()
+    {
+        visited = false;
     }
 
     @Override
     public Iterator<Double> getWeightIterator()
     {
-        return null;
+        return new WeightIterator();
     }
 
     @Override
@@ -268,6 +288,21 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
     public boolean hasPredecessor()
     {
         return false;
+    }
+
+    //判断两个顶点是否相同
+    @Override
+    public boolean equals(Object other)
+    {
+        boolean result;
+        if ((other == null) || (getClass() != other.getClass()))
+            result = false;
+        else
+        {
+            Vertex<T> otherVertex = (Vertex<T>) other;
+            result = label.equals(otherVertex.label);//节点是否相同最终还是由标识 节点类型的类的equals() 决定
+        }
+        return result;
     }
 }
 
