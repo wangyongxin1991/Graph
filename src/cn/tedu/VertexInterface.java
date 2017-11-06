@@ -20,7 +20,9 @@ public interface VertexInterface<T>
     public T getLabel();
 
     public void visit();//标记该顶点已经被访问
+
     public void unVisit();//标记顶点尚未访问
+
     public boolean isVisited();//判断顶点是否被访问
 
     /** Task: 用来条加权边连接该顶点与指定顶点

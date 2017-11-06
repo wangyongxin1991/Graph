@@ -30,6 +30,15 @@ public class TestGraph
         graph.addVertex("D");
         graph.addVertex("E");
         System.out.println("Number of graph's vertex = " + graph.getNumberOfVertices());//5
+
+        graph.addEdge("A", "D");
+        graph.addEdge("A", "C");
+        graph.addEdge("A", "B");
+        graph.addEdge("D", "C");
+        graph.addEdge("C", "E");
+        System.out.println("Number of graph's edge = " + graph.getNumberOfEdges());//5
+        System.out.println(graph.hasEdge("A", "C"));
+
     }
 
 }

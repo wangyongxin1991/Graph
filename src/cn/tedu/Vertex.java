@@ -1,6 +1,6 @@
 /**
- * 
- */
+* 
+*/
 package cn.tedu;
 
 import java.io.Serializable;
@@ -95,7 +95,7 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
             VertexInterface<T> nextNeighbor = null;
             if(edgeIterator.hasNext()){
                 Edge nextToNeighbor = edgeIterator.next();//LinkedList中存储的是Edge
-                edgeIterator = (Iterator<Edge>) nextToNeighbor.getEndVertex();//从Edge对象中取出顶点
+                nextNeighbor = nextToNeighbor.getEndVertex();//从Edge对象中取出顶点
             }
             else
                 throw new NoSuchElementException();
@@ -218,6 +218,7 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
             } //end while
             if (!duplicateEdge)
             {
+                //关键一步
                 edgeList.add((T) new Edge(endVertex, edgeWeight));//添加一条新边
                 result = true;
             } //end if
@@ -264,7 +265,7 @@ public class Vertex<T> implements Serializable, VertexInterface<T>
     @Override
     public boolean hasNeighbor()
     {
-        return false;
+        return !(edgeList.isEmpty());//邻接点实质是存储是List中
     }
 
     @Override
